@@ -1,5 +1,7 @@
 import pygame
 import os
+import random
+import math
 
 
 
@@ -42,10 +44,12 @@ is_runing = True
 selected_color = None
 player_position = [0, 0]
 spike_positions = []
+game_rawscore = 0
 game_score = 0
-is_alive = True
 
-is_dragging = False
+is_alive = True
+killer_spike_index = 0
+
 
 
 # select color loop
@@ -58,7 +62,6 @@ while is_runing and selected_color == None:
         0, 
         DISPLAY_SIZE[0] / 2, 
         DISPLAY_SIZE[1]))
-
     DISPLAY_SURFACE.blit(IMAGE_CAT['b'], (
         DISPLAY_SIZE[0] * 1 / 4 - IMAGE_CENTER[0], 
         DISPLAY_SIZE[1] * 1 / 2 - IMAGE_CENTER[1]))
@@ -69,17 +72,19 @@ while is_runing and selected_color == None:
         0, 
         DISPLAY_SIZE[0] / 2, 
         DISPLAY_SIZE[1]))
-
     DISPLAY_SURFACE.blit(IMAGE_CAT['w'], (
         DISPLAY_SIZE[0] * 3 / 4 - IMAGE_CENTER[0], 
         DISPLAY_SIZE[1] * 1 / 2 - IMAGE_CENTER[1]))
     
     # events
     for event in pygame.event.get():
+
+        # exit
         if event.type == pygame.QUIT:
             pygame.quit()
             is_runing = False
 
+        # select
         if event.type == pygame.MOUSEBUTTONDOWN:
             selected_color = 'b' if event.pos[0] < DISPLAY_SIZE[0] / 2 else 'w'
 
@@ -88,42 +93,80 @@ while is_runing and selected_color == None:
 
 
 # game loop
-# select color loop
 while is_runing:
-    CLOCK.tick(60)
+    # alive loop
+    while is_alive:
 
-    DISPLAY_SURFACE.fill(COLORS[selected_color])
+        CLOCK.tick(60)
+        # score increase
+        game_score += 1
+
+        # move spikes
+        __game_speed = game_score / 100
+        __spike_index = 0
+        while __spike_index < len(spike_positions):
+            spike_positions[__spike_index][0] -= __game_speed
+            if math.dist(spike_positions[__spike_index], player_position) <= IMAGE_SIZE[0] / 2:
+                is_alive = False
+                killer_spike_index = __spike_index
+
+            if spike_positions[__spike_index][0] <= -IMAGE_CENTER[0]:
+                del spike_positions[__spike_index]
+            else:
+                __spike_index += 1
+
+        # create spikes
+        __spikes_max = DISPLAY_SIZE[1] / IMAGE_SIZE[1] / 2
+        __spike_spawn_speed = math.ceil(game_score / 100 / (len(spike_positions) + 1))
+        for __spike_chance in range(random.randint(-__spikes_max + __spike_spawn_speed, __spike_spawn_speed)):
+            if __spike_chance > 0:
+                spike_positions.append([DISPLAY_SIZE[0], random.randint(0, DISPLAY_SIZE[1] - IMAGE_SIZE[1])])
+
+        DISPLAY_SURFACE.fill(COLORS[selected_color])
+        
+        # draw player
+        if is_alive: DISPLAY_SURFACE.blit(IMAGE_CAT[selected_color], player_position)
+        else: DISPLAY_SURFACE.blit(IMAGE_DEAD[selected_color], player_position)
+
+        # draw spikes
+        for __spike_position in spike_positions:
+            DISPLAY_SURFACE.blit(IMAGE_SPIKE[selected_color], __spike_position)
+        
+        # events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                is_runing = False
+
+            if event.type == pygame.MOUSEMOTION:
+
+                # move
+                player_position[0] += event.rel[0]
+                player_position[1] += event.rel[1]
+
+                # fix
+                if 0 > player_position[0]: player_position[0] = 0
+                elif player_position[0] > DISPLAY_SIZE[0] - IMAGE_SIZE[0]: player_position[0] = DISPLAY_SIZE[0] - IMAGE_SIZE[0]
+                if 0 > player_position[1]: player_position[1] = 0
+                elif player_position[1] > DISPLAY_SIZE[1] - IMAGE_SIZE[1]: player_position[1] = DISPLAY_SIZE[1] - IMAGE_SIZE[1]
+
+        pygame.display.update()
+
+    game_score /= 2
     
-    # player
-    if is_alive: DISPLAY_SURFACE.blit(IMAGE_CAT[selected_color], player_position)
-    else: DISPLAY_SURFACE.blit(IMAGE_DEAD[selected_color], player_position)
+    # dead loop
+    while not is_alive:
+        CLOCK.tick(60)
 
-    # spikes
-    for _spike_position in spike_positions:
-        DISPLAY_SURFACE.blit(IMAGE_SPIKE[selected_color], _spike_position)
-    
-    # events
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            is_runing = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                is_runing = False
 
-        if event.type == pygame.MOUSEMOTION:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                del spike_positions[killer_spike_index]
+                is_alive = True
 
-            # move
-            player_position[0] += event.rel[0]
-            player_position[1] += event.rel[1]
-
-            # fix
-            if 0 > player_position[0]: player_position[0] = 0
-            elif player_position[0] > DISPLAY_SIZE[0] - IMAGE_SIZE[0]: player_position[0] = DISPLAY_SIZE[0] - IMAGE_SIZE[0]
-            if 0 > player_position[1]: player_position[1] = 0
-            elif player_position[1] > DISPLAY_SIZE[1] - IMAGE_SIZE[1]: player_position[1] = DISPLAY_SIZE[1] - IMAGE_SIZE[1]
-
-            if event.touch == True: selected_color = 'b' if selected_color == 'w' else 'w'
-
-        # if event.type == pygame.MOUSEBUTTONDOWN:
-        #     pass
-
-    pygame.display.update()
-            
+        # dead
+        pygame.display.update()
+                
