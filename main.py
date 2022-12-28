@@ -10,10 +10,12 @@ pygame.init()
 
 # constants and setup
 IS_ANDROID = 'ANDROID_ARGUMENT' in os.environ
-PATH = "/data/data/org.test.pgame/files/app/" if IS_ANDROID else "./"
+PATH = "/data/data/org.test.cataway/files/app/" if IS_ANDROID else "./"
 IMAGE_SPIKE = {
     "w": pygame.image.load(PATH+"wspike.png"),
     "b": pygame.image.load(PATH+"bspike.png")}
+while True:
+    pass
 IMAGE_DEAD = {
     "w":  pygame.image.load(PATH+"wdead.png"),
     "b":  pygame.image.load(PATH+"bdead.png")}
