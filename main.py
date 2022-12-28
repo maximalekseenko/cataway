@@ -120,7 +120,7 @@ while is_runing:
         __spike_spawn_speed = math.ceil(game_score / 100 / (len(spike_positions) + 1))
         for __spike_chance in range(random.randint(-__spikes_max + __spike_spawn_speed, __spike_spawn_speed)):
             if __spike_chance > 0:
-                spike_positions.append([DISPLAY_SIZE[0], random.randint(0, DISPLAY_SIZE[1] - IMAGE_SIZE[1])])
+                spike_positions.append([DISPLAY_SIZE[0] + IMAGE_SIZE[0], random.randint(0, DISPLAY_SIZE[1] - IMAGE_SIZE[1])])
 
         DISPLAY_SURFACE.fill(COLORS[selected_color])
         
