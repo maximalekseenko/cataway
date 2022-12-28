@@ -14,8 +14,6 @@ PATH = "/data/data/org.test.cataway/files/app/" if IS_ANDROID else "./"
 IMAGE_SPIKE = {
     "w": pygame.image.load(PATH+"wspike.png"),
     "b": pygame.image.load(PATH+"bspike.png")}
-while True:
-    pass
 IMAGE_DEAD = {
     "w":  pygame.image.load(PATH+"wdead.png"),
     "b":  pygame.image.load(PATH+"bdead.png")}
