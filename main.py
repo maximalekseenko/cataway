@@ -27,12 +27,16 @@ IMAGE_CENTER = (IMAGE_SIZE[0] / 2, IMAGE_SIZE[1] / 2)
 COLORS = {
     'w': "#ffffff",
     'b': "#000000"}
+OPCOLORS = {
+    'w': "#000000",
+    'b': "#ffffff"}
 DIRECTION = {
     'w': -1,
     'b': 1
 }
 DISPLAY_SURFACE = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 DISPLAY_SIZE = DISPLAY_SURFACE.get_size()
+FONT = pygame.font.Font(PATH+"font.ttf", 100)
 CLOCK = pygame.time.Clock()
 pygame.display.set_caption('Cat Away')
 pygame.display.set_icon(pygame.image.load(PATH+"icon.png"))
@@ -122,6 +126,7 @@ while is_runing:
             if __spike_chance > 0:
                 spike_positions.append([DISPLAY_SIZE[0] + IMAGE_SIZE[0], random.randint(0, DISPLAY_SIZE[1] - IMAGE_SIZE[1])])
 
+        # background
         DISPLAY_SURFACE.fill(COLORS[selected_color])
         
         # draw player
@@ -132,6 +137,20 @@ while is_runing:
         for __spike_position in spike_positions:
             DISPLAY_SURFACE.blit(IMAGE_SPIKE[selected_color], __spike_position)
         
+        # draw score
+        __score_text = "SCORE:" + str(int(game_score / 10))
+        ## shadow
+        __score_shadow_surf = FONT.render(__score_text, 0, OPCOLORS[selected_color])
+        __score_shadow_tr_surf = __score_shadow_surf.get_rect(topleft=(0, 2))
+        __score_shadow_bl_surf = __score_shadow_surf.get_rect(topleft=(2, 0))
+        DISPLAY_SURFACE.blit(__score_shadow_surf, __score_shadow_tr_surf)
+        DISPLAY_SURFACE.blit(__score_shadow_surf, __score_shadow_bl_surf)
+
+        ## score
+        __score_surf = FONT.render(__score_text, 0, COLORS[selected_color])
+        __score_rect = __score_surf.get_rect(topleft=(1, 1))
+        DISPLAY_SURFACE.blit(__score_surf, __score_rect)
+
         # events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
