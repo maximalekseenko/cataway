@@ -10,10 +10,10 @@ package.name = cataway
 package.domain = org.test
 
 # (str) Source code where the main.py live
-source.dir = .
+source.dir = ./src
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,kv,ttf
+source.include_exts = py,png,ttf
 
 # (list) List of inclusions using pattern matching
 #source.include_patterns = assets/*,images/*.png
@@ -88,13 +88,13 @@ fullscreen = 0
 #android.permissions = INTERNET
 
 # (int) Target Android API, should be as high as possible.
-#android.api = 27
+android.api = 30
 
 # (int) Minimum API your APK will support.
-#android.minapi = 21
+android.minapi = 27
 
 # (int) Android SDK version to use
-#android.sdk = 20
+# android.sdk = 20
 
 # (str) Android NDK version to use
 #android.ndk = 19b

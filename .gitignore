@@ -2,3 +2,4 @@ __pycache__/
 .buildozer
 .DS_Store
 bin
+keystores

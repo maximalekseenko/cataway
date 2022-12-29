@@ -55,7 +55,6 @@ is_alive = True
 killer_spike_index = 0
 
 
-
 # select color loop
 while is_runing and selected_color == None:
     CLOCK.tick(60)
@@ -94,7 +93,6 @@ while is_runing and selected_color == None:
 
     pygame.display.update()
             
-
 
 # game loop
 while is_runing:
