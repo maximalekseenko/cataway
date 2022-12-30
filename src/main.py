@@ -12,7 +12,7 @@ pygame.init()
 
 # constants and setup
 IS_ANDROID = 'ANDROID_ARGUMENT' in os.environ
-PATH = "/data/data/org.test.cataway/files/app/" if IS_ANDROID else "./"
+PATH = "/data/data/ru.harmonica.cataway/files/app/" if IS_ANDROID else "./"
 IMAGE_SPIKE = {
     "w": pygame.image.load(PATH+"wspike.png"),
     "b": pygame.image.load(PATH+"bspike.png")}
@@ -118,7 +118,7 @@ while is_runing:
                 __spike_index += 1
 
         # create spikes
-        __spikes_max = DISPLAY_SIZE[1] / IMAGE_SIZE[1] / 2
+        __spikes_max = int(DISPLAY_SIZE[1] / IMAGE_SIZE[1] / 2)
         __spike_spawn_speed = math.ceil(game_score / 100 / (len(spike_positions) + 1))
         for __spike_chance in range(random.randint(-__spikes_max + __spike_spawn_speed, __spike_spawn_speed)):
             if __spike_chance > 0:
@@ -143,7 +143,6 @@ while is_runing:
         __score_shadow_bl_surf = __score_shadow_surf.get_rect(topleft=(2, 0))
         DISPLAY_SURFACE.blit(__score_shadow_surf, __score_shadow_tr_surf)
         DISPLAY_SURFACE.blit(__score_shadow_surf, __score_shadow_bl_surf)
-
         ## score
         __score_surf = FONT.render(__score_text, 0, COLORS[selected_color])
         __score_rect = __score_surf.get_rect(topleft=(1, 1))
