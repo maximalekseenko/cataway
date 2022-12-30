@@ -46,7 +46,7 @@ pygame.display.set_icon(pygame.image.load(PATH+"icon.png"))
 # variables
 is_runing = True
 selected_color = None
-player_position = [0, 0]
+player_position = [DISPLAY_SIZE[0] * 1/5 - IMAGE_SIZE[0] / 2, DISPLAY_SIZE[1] / 2 - IMAGE_SIZE[1] / 2]
 spike_positions = []
 game_rawscore = 0
 game_score = 0
