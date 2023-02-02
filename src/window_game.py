@@ -1,116 +1,96 @@
+from engine import Window
 from application import application
-
-from window_game import Window_Game
-application.current_window = Window_Game()
-application.Begin()
-
-quit()
-
 import pygame
-import os
-import random
-import math
 
 
 
-# pygame init
-pygame.init()
+class Window_Game(Window):
+    def On_Init(self):
+        return super().On_Init()
+
+        
+    def On_Open(self) -> None:
+        self.game_size = (1000, 1000)
+        self.cat_size = (100, 100)
+        self.is_alife = True
+        self.player_position = [
+            (self.game_size[0] - self.cat_size[0]) / 2,
+            (self.game_size[1] - self.cat_size[1]) / 2,
+        ]
+
+        self.Update()
 
 
-
-# constants and setup
-IS_ANDROID = 'ANDROID_ARGUMENT' in os.environ
-PATH = "/data/data/ru.harmonica.cataway/files/app/" if IS_ANDROID else "./"
-IMAGE_SPIKE = {
-    "w": pygame.image.load(PATH+"wspike.png"),
-    "b": pygame.image.load(PATH+"bspike.png")}
-IMAGE_DEAD = {
-    "w":  pygame.image.load(PATH+"wdead.png"),
-    "b":  pygame.image.load(PATH+"bdead.png")}
-IMAGE_CAT = {
-    "w":   pygame.image.load(PATH+"wcat.png"),
-    "b":   pygame.image.load(PATH+"bcat.png")}
-IMAGE_SIZE = IMAGE_CAT["b"].get_size()
-IMAGE_CENTER = (IMAGE_SIZE[0] / 2, IMAGE_SIZE[1] / 2)
-COLORS = {
-    'w': "#ffffff",
-    'b': "#000000"}
-OPCOLORS = {
-    'w': "#000000",
-    'b': "#ffffff"}
-DIRECTION = {
-    'w': -1,
-    'b': 1
-}
-DISPLAY_SURFACE = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-DISPLAY_SIZE = DISPLAY_SURFACE.get_size()
-FONT = pygame.font.Font(PATH+"7seg.ttf", 100)
-CLOCK = pygame.time.Clock()
-pygame.display.set_caption('Cat Away')
-pygame.display.set_icon(pygame.image.load(PATH+"icon.png"))
- 
+    def On_Close(self) -> None:
+        return super().On_Close()
 
 
-# variables
-is_runing = True
-selected_color = 'b'
-selected_direction = 'b'
-player_position = [DISPLAY_SIZE[0] * 1/5 - IMAGE_SIZE[0] / 2, DISPLAY_SIZE[1] / 2 - IMAGE_SIZE[1] / 2]
-spike_positions = []
-game_rawscore = 0
-game_score = 0
+    def On_Handle(self, event: pygame.event.Event) -> None:
 
-is_alive = False
-killer_spike_index = 0
-
-
-# select color loop
-while is_runing and not is_alive:
-    CLOCK.tick(60)
-
-    # black
-    pygame.draw.rect(DISPLAY_SURFACE, COLORS['b'], (
-        0, 
-        0, 
-        DISPLAY_SIZE[0] / 2, 
-        DISPLAY_SIZE[1]))
-    if selected_color == 'b':
-        pygame.draw.rect(DISPLAY_SURFACE, COLORS['b'], (
-            0, 
-            0, 
-            DISPLAY_SIZE[0] / 2, 
-            DISPLAY_SIZE[1]), 1)
-    DISPLAY_SURFACE.blit(IMAGE_CAT['b'], (
-        DISPLAY_SIZE[0] * 1 / 4 - IMAGE_CENTER[0], 
-        DISPLAY_SIZE[1] * 1 / 2 - IMAGE_CENTER[1]))
-
-    # white
-    pygame.draw.rect(DISPLAY_SURFACE, COLORS['w'], (
-        DISPLAY_SIZE[0] / 2, 
-        0, 
-        DISPLAY_SIZE[0] / 2, 
-        DISPLAY_SIZE[1]))
-    DISPLAY_SURFACE.blit(IMAGE_CAT['w'], (
-        DISPLAY_SIZE[0] * 3 / 4 - IMAGE_CENTER[0], 
-        DISPLAY_SIZE[1] * 1 / 2 - IMAGE_CENTER[1]))
+        # window resized
+        if event.type == pygame.WINDOWSIZECHANGED: self.Update()
+        # Move_Cat
+        elif event.type == pygame.MOUSEMOTION and event.buttons[0]: self.Move_Cat(*event.rel)
+        else: print(event)
     
-    # events
-    for event in pygame.event.get():
 
-        # exit
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            is_runing = False
+    def Move_Cat(self, dx, dy):
 
-        # select
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            selected_color = 'b' if event.pos[0] < DISPLAY_SIZE[0] / 2 else 'w'
+            # move
+            self.player_position[0] += dx / self.scale
+            self.player_position[1] += dy / self.scale
 
-    pygame.display.update()
-            
+            # fix
+            # if 0 > self.player_position[0]: self.player_position[0] = 0
+            # elif self.player_position[0] > DISPLAY_SIZE[0] - IMAGE_SIZE[0]: self.player_position[0] = DISPLAY_SIZE[0] - IMAGE_SIZE[0]
+            # if 0 > self.player_position[1]: self.player_position[1] = 0
+            # elif self.player_position[1] > DISPLAY_SIZE[1] - IMAGE_SIZE[1]: self.player_position[1] = DISPLAY_SIZE[1] - IMAGE_SIZE[1]
 
-# game loop
-while is_runing:
+
+    def On_Render(self) -> None:
+        self._Render_Background()
+        self._Render_Cat()
+        self._Render_Spikes()
+        self._Render_Score()
+
+    
+    def _Render_Background(self):
+        self.surface.fill(application.colors[application.selected_color])
+
+    
+    def _Render_Cat(self):
+        self.surface.blit(self.cat_image, (
+            self.player_position[0] * self.scale, 
+            self.player_position[1] * self.scale,
+            self.cat_size[0] * self.scale,
+            self.cat_size[1] * self.scale,
+            ))
+
+
+    def _Render_Spikes(self):
+        pass
+
+    
+    def _Render_Score(self):
+        pass
+
+
+    def On_Update(self):
+        __screen_height = application.screen.get_height()
+        __screen_width = application.screen.get_width()
+        self.scale = __screen_height / 1000
+
+        self.cat_image = pygame.transform.scale(
+            application.images[str(application.selected_color) + 'cat'],
+            (
+                self.cat_size[0] * self.scale,
+                self.cat_size[1] * self.scale,
+            )
+        )
+
+
+"""
+
     # alive loop
     while is_alive:
 
@@ -201,3 +181,4 @@ while is_runing:
         # dead
         pygame.display.update()
                 
+"""
