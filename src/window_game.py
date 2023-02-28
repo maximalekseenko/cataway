@@ -1,6 +1,7 @@
 from engine import Window
 from application import application
 import pygame
+import random
 
 
 
@@ -10,15 +11,23 @@ class Window_Game(Window):
 
         
     def On_Open(self) -> None:
+        self._New_Game()
+        self.Update()
+    
+
+    def _New_Game(self):
+        self.seed = random.randint(0, 99999)
+        self.score = 0
+
         self.game_size = (1000, 1000)
         self.cat_size = (100, 100)
-        self.is_alife = True
-        self.player_position = [
+        self.spike_size = (100, 100)
+
+        self.is_alive = True
+        self.cat_position = [
             (self.game_size[0] - self.cat_size[0]) / 2,
             (self.game_size[1] - self.cat_size[1]) / 2,
         ]
-
-        self.Update()
 
 
     def On_Close(self) -> None:
@@ -34,34 +43,55 @@ class Window_Game(Window):
         else: print(event)
     
 
+    def Score(self):
+        self.score += application.clock.get_time()
+        self.score_delta = application.clock.get_time()
+
+
     def Move_Cat(self, dx, dy):
 
             # move
-            self.player_position[0] += dx / self.scale
-            self.player_position[1] += dy / self.scale
+            self.cat_position[0] += dx / self.scale
+            self.cat_position[1] += dy / self.scale
 
-            # fix
-            # if 0 > self.player_position[0]: self.player_position[0] = 0
-            # elif self.player_position[0] > DISPLAY_SIZE[0] - IMAGE_SIZE[0]: self.player_position[0] = DISPLAY_SIZE[0] - IMAGE_SIZE[0]
-            # if 0 > self.player_position[1]: self.player_position[1] = 0
-            # elif self.player_position[1] > DISPLAY_SIZE[1] - IMAGE_SIZE[1]: self.player_position[1] = DISPLAY_SIZE[1] - IMAGE_SIZE[1]
+            # fix out of bounds
+            if 0 > self.cat_position[0]: self.cat_position[0] = 0
+            elif self.cat_position[0] > self.game_size[0] - self.cat_size[0]: self.cat_position[0] = self.game_size[0] - self.cat_size[0]
+            if 0 > self.cat_position[1]: self.cat_position[1] = 0
+            elif self.cat_position[1] > self.game_size[1] - self.cat_size[1]: self.cat_position[1] = self.game_size[1] - self.cat_size[1]
 
 
     def On_Render(self) -> None:
+        # TODO Move from render
+        self.Score()
         self._Render_Background()
         self._Render_Cat()
         self._Render_Spikes()
         self._Render_Score()
+        if application.debug:self._Render_Debug()
 
     
     def _Render_Background(self):
+        # background
         self.surface.fill(application.colors[application.selected_color])
+        # wall
+        pygame.draw.line(self.surface, 
+            application.colors[2], 
+            (
+                self.game_size[0] * self.scale,
+                0,
+            ),
+            (
+                self.game_size[0] * self.scale,
+                self.game_size[1] * self.scale,
+            )
+        )
 
     
     def _Render_Cat(self):
         self.surface.blit(self.cat_image, (
-            self.player_position[0] * self.scale, 
-            self.player_position[1] * self.scale,
+            self.cat_position[0] * self.scale, 
+            self.cat_position[1] * self.scale,
             self.cat_size[0] * self.scale,
             self.cat_size[1] * self.scale,
             ))
@@ -73,6 +103,21 @@ class Window_Game(Window):
     
     def _Render_Score(self):
         pass
+
+
+    def _Render_Debug(self):
+        textlist = {
+            'catpos': self.cat_position,
+            'score': self.score,
+            'scored': self.score_delta,
+            'scale': self.scale,
+        }
+        __text_top = 0
+        for __name, __value in textlist.items():
+            text_surf = application.font_none.render(f"{__name}:{__value}", 0, "#ffffff", "#000000")
+            text_rect = text_surf.get_rect(left=0, top=__text_top)
+            self.surface.blit(text_surf, text_rect)
+            __text_top += text_rect.height
 
 
     def On_Update(self):
@@ -103,7 +148,7 @@ class Window_Game(Window):
         __spike_index = 0
         while __spike_index < len(spike_positions):
             spike_positions[__spike_index][0] -= __game_speed
-            if math.dist(spike_positions[__spike_index], player_position) <= IMAGE_SIZE[0] / 2:
+            if math.dist(spike_positions[__spike_index], cat_position) <= IMAGE_SIZE[0] / 2:
                 is_alive = False
                 killer_spike_index = __spike_index
 
@@ -123,8 +168,8 @@ class Window_Game(Window):
         DISPLAY_SURFACE.fill(COLORS[selected_color])
         
         # draw player
-        if is_alive: DISPLAY_SURFACE.blit(IMAGE_CAT[selected_color], player_position)
-        else: DISPLAY_SURFACE.blit(IMAGE_DEAD[selected_color], player_position)
+        if is_alive: DISPLAY_SURFACE.blit(IMAGE_CAT[selected_color], cat_position)
+        else: DISPLAY_SURFACE.blit(IMAGE_DEAD[selected_color], cat_position)
 
         # draw spikes
         for __spike_position in spike_positions:
@@ -152,14 +197,14 @@ class Window_Game(Window):
             if event.type == pygame.MOUSEMOTION:
 
                 # move
-                player_position[0] += event.rel[0]
-                player_position[1] += event.rel[1]
+                cat_position[0] += event.rel[0]
+                cat_position[1] += event.rel[1]
 
                 # fix
-                if 0 > player_position[0]: player_position[0] = 0
-                elif player_position[0] > DISPLAY_SIZE[0] - IMAGE_SIZE[0]: player_position[0] = DISPLAY_SIZE[0] - IMAGE_SIZE[0]
-                if 0 > player_position[1]: player_position[1] = 0
-                elif player_position[1] > DISPLAY_SIZE[1] - IMAGE_SIZE[1]: player_position[1] = DISPLAY_SIZE[1] - IMAGE_SIZE[1]
+                if 0 > cat_position[0]: cat_position[0] = 0
+                elif cat_position[0] > DISPLAY_SIZE[0] - IMAGE_SIZE[0]: cat_position[0] = DISPLAY_SIZE[0] - IMAGE_SIZE[0]
+                if 0 > cat_position[1]: cat_position[1] = 0
+                elif cat_position[1] > DISPLAY_SIZE[1] - IMAGE_SIZE[1]: cat_position[1] = DISPLAY_SIZE[1] - IMAGE_SIZE[1]
 
         pygame.display.update()
 
